@@ -171,6 +171,7 @@
     </div>
 
     <script>
+        // Lorsque le formulaire est soumis
         document.getElementById("tirageForm").addEventListener("submit", function(event) {
             event.preventDefault();
 
@@ -199,42 +200,41 @@
             // Récupérer les cadences choisies
             const cadence = selectedStandards.length > 0 ? selectedStandards[Math.floor(Math.random() * selectedStandards.length)] : "Aucune cadence choisie";
 
-            // Créer un objet avec les données à envoyer
+            // Créer un objet avec les données à envoyer dans LocalStorage
             const data = {
                 "nomPrénom": nomPrénom,
                 "selectedStandards": selectedStandards.join(", "),
-                "cadence": cadence
+                "cadence": cadence,
+                "date": new Date().toLocaleString()
             };
 
-            // Envoyer les données au Google Apps Script
-            fetch("https://script.google.com/macros/s/AKfycbzrJrRYc5zDxDoIOZAXB2R5A5sdaP2miGY9MukRk1DKNQ8fbQXPhamzKHaN1OuqrhKGvg/exec", {
-                method: "POST",
-                body: JSON.stringify(data),
-                headers: { "Content-Type": "application/json" }
-            })
-            .then(response => response.text())
-            .then(result => {
-                document.getElementById("result").innerHTML = `Tirage effectué : <br> Standard : <strong>${randomStandard}</strong><br> Cadence : <strong>${cadence}</strong>`;
-            })
-            .catch(error => console.error('Erreur:', error));
+            // Enregistrer les données dans LocalStorage
+            let historique = JSON.parse(localStorage.getItem("historique")) || [];
+            historique.push(data);
+            localStorage.setItem("historique", JSON.stringify(historique));
+
+            // Afficher le tirage sur la page
+            document.getElementById("result").innerHTML = `Tirage effectué : <br> Standard : <strong>${randomStandard}</strong><br> Cadence : <strong>${cadence}</strong>`;
+
+            // Rafraîchir l'affichage de l'historique
+            afficherHistorique();
         });
 
-        // Récupérer et afficher l'historique des tirages
-        fetch("https://script.google.com/macros/s/AKfycbzrJrRYc5zDxDoIOZAXB2R5A5sdaP2miGY9MukRk1DKNQ8fbQXPhamzKHaN1OuqrhKGvg/exec")
-            .then(response => response.json())
-            .then(data => {
-                let historiqueDiv = document.getElementById('historique');
-                let html = '<h2>Historique des Tirages</h2><table><tr><th>Nom et Prénom</th><th>Standards Choisis</th><th>Cadence Tirée</th><th>Date</th></tr>';
-                
-                data.forEach(row => {
-                    html += `<tr><td>${row.nomPrénom}</td><td>${row.selectedStandards}</td><td>${row.cadence}</td><td>${row.date}</td></tr>`;
-                });
-                html += '</table>';
+        // Fonction pour afficher l'historique
+        function afficherHistorique() {
+            let historiqueDiv = document.getElementById('historique');
+            let historique = JSON.parse(localStorage.getItem("historique")) || [];
+            let html = '<h2>Historique des Tirages</h2><table><tr><th>Nom et Prénom</th><th>Standards Choisis</th><th>Cadence Tirée</th><th>Date</th></tr>';
+            
+            historique.forEach(row => {
+                html += `<tr><td>${row.nomPrénom}</td><td>${row.selectedStandards}</td><td>${row.cadence}</td><td>${row.date}</td></tr>`;
+            });
+            html += '</table>';
+            historiqueDiv.innerHTML = html;
+        }
 
-                // Afficher l'historique dans le div
-                historiqueDiv.innerHTML = html;
-            })
-            .catch(error => console.error('Erreur lors de la récupération des données:', error));
+        // Afficher l'historique au chargement de la page
+        window.onload = afficherHistorique;
     </script>
 </body>
 </html>
