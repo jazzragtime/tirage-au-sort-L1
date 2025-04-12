@@ -57,6 +57,14 @@
             border-color: #3498db; /* Bordure bleue au focus */
         }
 
+        .checkbox-group {
+            margin-bottom: 20px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
         .submit-button {
             background-color: #e67e22; /* Orange vif pour le bouton de soumission */
             color: white;
@@ -107,7 +115,7 @@
 <body>
 
     <div class="container">
-        <h1>Tirage au Sort des Standards de Jazz et Cadences</h1>
+        <h1>Tirage au sort des standards de jazz et des cadences</h1>
         <form id="tirageForm">
             <!-- Nom et Prénom -->
             <label for="nomPrénom">Nom et Prénom (obligatoire)</label>
@@ -130,6 +138,28 @@
             </div>
 
             <!-- Choix de la cadence -->
+            <label>Choisir une cadence :</label>
+            <div class="checkbox-group">
+                <input type="checkbox" id="doMaj" value="Do majeur">
+                <label for="doMaj">Do majeur</label>
+
+                <input type="checkbox" id="laMin" value="La mineur">
+                <label for="laMin">La mineur</label>
+
+                <input type="checkbox" id="faMaj" value="Fa majeur">
+                <label for="faMaj">Fa majeur</label>
+
+                <input type="checkbox" id="reMin" value="Ré mineur">
+                <label for="reMin">Ré mineur</label>
+
+                <input type="checkbox" id="solMaj" value="Sol majeur">
+                <label for="solMaj">Sol majeur</label>
+
+                <input type="checkbox" id="miMin" value="Mi mineur">
+                <label for="miMin">Mi mineur</label>
+            </div>
+
+            <!-- Bouton pour tirer au sort -->
             <button type="submit" class="submit-button">Tirer au sort</button>
         </form>
 
@@ -141,15 +171,61 @@
     </div>
 
     <script>
-        // Récupération et affichage de l'historique depuis Google Sheets via Google Apps Script
-        fetch("https://script.google.com/macros/s/AKfycbwLsKMHD_-Krsmeup_4KT6hYk6CXXPoHMBMqbqqea0dyx4z14HKFvhVuCRXDzbr7GF3rQ/exec")  // URL de ton script
-            .then(response => response.json())  // Convertir la réponse en JSON
+        document.getElementById("tirageForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            // Récupérer le nom et prénom
+            const nomPrénom = document.getElementById("nomPrénom").value.trim();
+            if (!nomPrénom) {
+                alert("Le nom et prénom sont obligatoires.");
+                return;
+            }
+
+            // Récupérer les standards choisis
+            const selectedStandards = [];
+            const checkboxes = document.querySelectorAll('.checkbox-group input[type="checkbox"]:checked');
+            checkboxes.forEach((checkbox) => {
+                selectedStandards.push(checkbox.value);
+            });
+
+            if (selectedStandards.length < 1) {
+                alert("Veuillez sélectionner au moins un standard.");
+                return;
+            }
+
+            // Tirer un standard au hasard parmi ceux sélectionnés
+            const randomStandard = selectedStandards[Math.floor(Math.random() * selectedStandards.length)];
+
+            // Récupérer les cadences choisies
+            const cadence = selectedStandards.length > 0 ? selectedStandards[Math.floor(Math.random() * selectedStandards.length)] : "Aucune cadence choisie";
+
+            // Créer un objet avec les données à envoyer
+            const data = {
+                "nomPrénom": nomPrénom,
+                "selectedStandards": selectedStandards.join(", "),
+                "cadence": cadence
+            };
+
+            // Envoyer les données au Google Apps Script
+            fetch("https://script.google.com/macros/s/AKfycbzrJrRYc5zDxDoIOZAXB2R5A5sdaP2miGY9MukRk1DKNQ8fbQXPhamzKHaN1OuqrhKGvg/exec", {
+                method: "POST",
+                body: JSON.stringify(data),
+                headers: { "Content-Type": "application/json" }
+            })
+            .then(response => response.text())
+            .then(result => {
+                document.getElementById("result").innerHTML = `Tirage effectué : <br> Standard : <strong>${randomStandard}</strong><br> Cadence : <strong>${cadence}</strong>`;
+            })
+            .catch(error => console.error('Erreur:', error));
+        });
+
+        // Récupérer et afficher l'historique des tirages
+        fetch("https://script.google.com/macros/s/AKfycbzrJrRYc5zDxDoIOZAXB2R5A5sdaP2miGY9MukRk1DKNQ8fbQXPhamzKHaN1OuqrhKGvg/exec")
+            .then(response => response.json())
             .then(data => {
-                // Cibler le div où l'historique sera affiché
                 let historiqueDiv = document.getElementById('historique');
                 let html = '<h2>Historique des Tirages</h2><table><tr><th>Nom et Prénom</th><th>Standards Choisis</th><th>Cadence Tirée</th><th>Date</th></tr>';
                 
-                // Boucler sur chaque entrée et construire une table HTML
                 data.forEach(row => {
                     html += `<tr><td>${row.nomPrénom}</td><td>${row.selectedStandards}</td><td>${row.cadence}</td><td>${row.date}</td></tr>`;
                 });
