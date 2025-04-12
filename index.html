@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tirage au Sort - Jazz Standards</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .container {
+            width: 300px;
+            margin: 0 auto;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Tirage au Sort des Standards de Jazz</h1>
+    <div class="container">
+        <form id="tirageForm">
+            <label for="standards">Choisissez vos standards :</label>
+            <select id="standards" multiple>
+                <option value="Blue Room">Blue Room</option>
+                <option value="Blue Bossa">Blue Bossa</option>
+                <option value="Almost Like Being in Love">Almost Like Being in Love</option>
+                <option value="Imagination">Imagination</option>
+            </select>
+            <button type="submit">Tirer au sort</button>
+        </form>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById("tirageForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            // Récupère les standards choisis par l'étudiant
+            const selectedStandards = Array.from(document.getElementById("standards").selectedOptions).map(option => option.value);
+            
+            // Si aucun standard n'est choisi
+            if (selectedStandards.length === 0) {
+                document.getElementById("result").innerHTML = "Veuillez sélectionner au moins un standard.";
+                return;
+            }
+
+            // Tire un standard au hasard parmi ceux sélectionnés
+            const randomStandard = selectedStandards[Math.floor(Math.random() * selectedStandards.length)];
+            document.getElementById("result").innerHTML = `Le standard tiré au sort est : <strong>${randomStandard}</strong>`;
+        });
+    </script>
+</body>
+</html>
